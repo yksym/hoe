@@ -47,10 +47,12 @@ hoe :: Flag "i" '["inplace"] "EXT" "Edit files in-place (make backup if EXT is n
     -> Arg "SCRIPT" String
     -> Arg "[FILES]" [String]
     -> Flag "m" '["mod"] "MODULES" "Import modules before running the script" (Def "" String)
+    -> Flag "l" '["load"] "MODULES" "Load module (from source code) before running the script" (Def "" String)
     -> Cmd "hoe: Haskell One-liner Evaluator" ()
-hoe inplace script files modules = do
+hoe inplace script files modules lmodules = do
     compiled <- liftIO $ runInterpreter $ do
         reset
+        loadModules $ words $ get lmodules
         setImportsQ $
             [ (m, Nothing) | m <- imports ] ++
             [ (m, Nothing) | m <- words $ get modules ]
@@ -82,3 +84,4 @@ exec files mbext f =
 
 main :: IO ()
 main = run "hoe" (Just $ showVersion version) hoe
+
