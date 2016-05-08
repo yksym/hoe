@@ -11,6 +11,7 @@ import           System.IO
 
 import           Evaluator
 import           Paths_hoe                    (version)
+import           Data.List.Split
 
 imports :: [String]
 imports =
@@ -43,6 +44,11 @@ imports =
     , "Text.Regex.Posix" -- from regex-posix
     ]
 
+splitModQual :: String -> (String, Maybe String)
+splitModQual s = case (splitOn "@" s) of
+    (m:q:[]) -> (m, Just q)
+    _ -> (s, Nothing)
+
 hoe :: Flag "i" '["inplace"] "EXT" "Edit files in-place (make backup if EXT is not null)" (Maybe String)
     -> Arg "SCRIPT" String
     -> Arg "[FILES]" [String]
@@ -55,7 +61,7 @@ hoe inplace script files modules lmodules = do
         loadModules $ words $ get lmodules
         setImportsQ $
             [ (m, Nothing) | m <- imports ] ++
-            [ (m, Nothing) | m <- words $ get modules ]
+            (map splitModQual $ words $ get modules)
         set [ installedModulesInScope := True ]
         compile $ get script
 
